@@ -51,3 +51,6 @@ pip install -r requirements.txt
 Run the application:
 
 streamlit run app.py
+
+Live App:
+https://logistics-cost-estimator.streamlit.app

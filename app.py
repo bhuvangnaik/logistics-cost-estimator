@@ -115,6 +115,10 @@ if st.button("Calculate Trip Cost"):
             fuel_required = calculate_fuel(distance, mileage)
             fuel_price, fuel_cost = calculate_fuel_cost(fuel_required, fuel_type)
 
+            # ROUND TRIP FUEL
+            round_trip_fuel_required = fuel_required * 2
+            round_trip_fuel_cost = fuel_cost * 2
+
             # TOLL CALCULATION
             toll_count, toll_rate, toll_cost = calculate_toll(distance, vehicle_type)
 
@@ -126,28 +130,32 @@ if st.button("Calculate Trip Cost"):
                 maintenance_cost
             )
 
-            # TOTAL COST
-            total_cost = fuel_cost + toll_cost + operational_total
+            # ONE WAY COST
+            one_way_total_cost = fuel_cost + toll_cost + operational_total
 
-            # KPI CALCULATIONS
-            cost_per_km = total_cost / distance
+            # ROUND TRIP COST
+            round_trip_total_cost = round_trip_fuel_cost + toll_cost + operational_total
+
+
+            # KPI CALCULATIONS (using round trip)
+            cost_per_km = round_trip_total_cost / distance
 
             if cargo_weight > 0:
-                cost_per_ton = total_cost / cargo_weight
-                cost_per_ton_km = total_cost / (cargo_weight * distance)
+                cost_per_ton = round_trip_total_cost / cargo_weight
+                cost_per_ton_km = round_trip_total_cost / (cargo_weight * distance)
             else:
                 cost_per_ton = 0
                 cost_per_ton_km = 0
 
 
-            # ROUTE INFO DISPLAY
+            # ROUTE INFO
             st.subheader("📍 Route Information")
 
             c1, c2, c3 = st.columns(3)
 
             c1.metric("Distance", f"{distance:.2f} km")
             c2.metric("Travel Time", f"{hours}h {minutes}m")
-            c3.metric("Fuel Required", f"{fuel_required:.2f} L")
+            c3.metric("One Way Fuel Required", f"{fuel_required:.2f} L")
 
             st.divider()
 
@@ -155,11 +163,12 @@ if st.button("Calculate Trip Cost"):
             # FUEL SECTION
             st.subheader("⛽ Fuel Analysis")
 
-            f1, f2, f3 = st.columns(3)
+            f1, f2, f3, f4 = st.columns(4)
 
             f1.metric("Fuel Type", fuel_type)
             f2.metric("Fuel Price", f"₹{fuel_price}/L")
-            f3.metric("Fuel Cost", f"₹{fuel_cost:,.2f}")
+            f3.metric("One Way Fuel Cost", f"₹{fuel_cost:,.2f}")
+            f4.metric("Round Trip Fuel Cost", f"₹{round_trip_fuel_cost:,.2f}")
 
             st.divider()
 
@@ -189,12 +198,19 @@ if st.button("Calculate Trip Cost"):
             st.divider()
 
 
-            # TOTAL COST
+            # TRIP COST SUMMARY
             st.subheader("💰 Trip Cost Summary")
 
-            st.metric(
-                "Total Estimated Trip Cost",
-                f"₹{total_cost:,.2f}"
+            tc1, tc2 = st.columns(2)
+
+            tc1.metric(
+                "One Way Trip Cost",
+                f"₹{one_way_total_cost:,.2f}"
+            )
+
+            tc2.metric(
+                "Round Trip Cost (Up & Down)",
+                f"₹{round_trip_total_cost:,.2f}"
             )
 
 
@@ -211,8 +227,8 @@ if st.button("Calculate Trip Cost"):
 
             # VISUALIZATION DATA
             cost_data = {
-                "Category": ["Fuel Cost", "Toll Cost", "Operational Cost"],
-                "Amount": [fuel_cost, toll_cost, operational_total]
+                "Category": ["Fuel Cost (Round Trip)", "Toll Cost", "Operational Cost"],
+                "Amount": [round_trip_fuel_cost, toll_cost, operational_total]
             }
 
             df_cost = pd.DataFrame(cost_data)
